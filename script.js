@@ -254,7 +254,7 @@ function drawCover(ctx, W, H, scale, data, logo) {
   /* ── Submission Date ── */
   cy += tableH + mm(10);
 
-  cy += mm(45);
+  cy += mm(40);
 
   if (data.submitDate) {
     ctx.fillStyle = '#0b2545';
@@ -372,172 +372,186 @@ function downloadPDF() {
   closePreviewModal();
 }
 
-function buildJsPDFCover(doc, d, logoSrc) {
-  const W = 210, H = 297;
+function buildJsPDFCover(ctx, d, logoSrc) {
+  const mm = v => v * scale; // helper: mm → px
 
-  // Background
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, W, H, 'F');
+  ctx.clearRect(0, 0, W, H);
 
-  // Outer double border
-  doc.setDrawColor(11, 37, 69);
-  doc.setLineWidth(1.2);
-  doc.rect(8, 8, W - 16, H - 16);
-  doc.setLineWidth(0.4);
-  doc.rect(10, 10, W - 20, H - 20);
+  /* ── Background ── */
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
 
-  // Top navy band
-  doc.setFillColor(11, 37, 69);
-  doc.rect(8, 8, W - 16, 22, 'F');
+  /* ── Top accent band ── */
+  ctx.fillStyle = '#0b2545';
+  ctx.fillRect(mm(8), mm(8), W - mm(16), mm(22));
 
-  // Bottom navy band
-  doc.rect(8, H - 30, W - 16, 22, 'F');
+  /* ── Bottom accent band ── */
+  ctx.fillStyle = '#0b2545';
+  ctx.fillRect(mm(8), H - mm(5), W - mm(16), mm(22));
 
-  // Red accent lines
-  doc.setFillColor(200, 16, 46);
-  doc.rect(8, 30, W - 16, 2.5, 'F');
-  doc.rect(8, H - 30, W - 16, 2.5, 'F');
+  /* ── University name (top band) ── */
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.font = `bold ${mm(6.5)}px 'Times New Roman', serif`;
+  ctx.fillText(data.university.toUpperCase(), W / 2, mm(22));
 
-  // University name in top band
-  doc.setFont('times', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(255, 255, 255);
-  doc.text(d.university.toUpperCase(), W / 2, 22, { align: 'center' });
+  /* ── Location below band ── */
+  ctx.fillStyle = '#0b2545';
+  ctx.font = `bold ${mm(5)}px 'Times New Roman', serif`;
+  ctx.fillText(data.location, W / 2, mm(42));
 
-  // Location
-  doc.setFontSize(11);
-  doc.setTextColor(11, 37, 69);
-  doc.text(d.location, W / 2, 42, { align: 'center' });
-
-  // Logo
-  if (logoSrc) {
-    try {
-      const fmt = logoSrc.includes('svg') ? 'SVG' : 'PNG';
-      doc.addImage(logoSrc, fmt, (W - 32) / 2, 48, 32, 32);
-    } catch(e) {
-      // fallback: skip logo silently
-    }
+  /* ── Logo ── */
+  const logoSize = mm(34);
+  const logoX = (W - logoSize) / 2;
+  const logoY = mm(48);
+  if (logo) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.15)';
+    ctx.shadowBlur = mm(3);
+    ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+    ctx.restore();
+  } else {
+    // placeholder circle
+    ctx.strokeStyle = '#dde2ea';
+    ctx.lineWidth = mm(0.5);
+    ctx.beginPath();
+    ctx.arc(W / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#aab';
+    ctx.font = `${mm(4)}px sans-serif`;
+    ctx.fillText('LOGO', W / 2, logoY + logoSize / 2 + mm(1.5));
   }
 
-  // Divider after logo
-  doc.setDrawColor(200, 16, 46);
-  doc.setLineWidth(0.6);
-  doc.line(25, 86, W - 25, 86);
+  /* ── Divider line after logo ── */
+  const afterLogo = logoY + logoSize + mm(8);
+  ctx.strokeStyle = '#0b2545';
+  ctx.lineWidth = mm(0.6);
+  ctx.beginPath();
+  ctx.moveTo(mm(50), afterLogo);
+  ctx.lineTo(W - mm(50), afterLogo);
+  ctx.stroke();
 
-  // "Assignment On:" label
-  doc.setFont('times', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(11, 37, 69);
-  doc.text('Assignment On:', W / 2, 96, { align: 'center' });
+  /* ── "Assignment On:" label ── */
+  const titleY = afterLogo + mm(10);
+  ctx.fillStyle = '#0b2545';
+  ctx.font = `bold ${mm(5)}px 'Times New Roman', serif`;
+  ctx.fillText('Assignment On:', W / 2, titleY);
 
-  // Title (wrapped)
-  doc.setFontSize(13);
-  doc.setTextColor(26, 26, 46);
-  const titleLines = doc.splitTextToSize(d.title, 160);
-  doc.text(titleLines, W / 2, 106, { align: 'center' });
-
-  let cy = 106 + titleLines.length * 8;
-
-  // Course info
-  doc.setFont('times', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(50, 50, 50);
-  const infoLines = [];
-  if (d.course)     infoLines.push(`Course Title:  ${d.course}`);
-  if (d.courseCode) infoLines.push(`Course Code: ${d.courseCode}`);
-  if (d.year) infoLines.push(`Year: ${d.year}`);
-  if (d.term) infoLines.push(`Term: ${d.term}`);
-  if (d.session)    infoLines.push(`Session: ${d.session}`);
-  infoLines.forEach((line, i) => {
-    doc.text(line, W / 2, cy + i * 7, { align: 'center' });
+  /* ── Assignment title (wrapped) ── */
+  ctx.font = `bold ${mm(8)}px 'Times New Roman', serif`;
+  ctx.fillStyle = '#1a1a2e';
+  const titleLines = wrapText(ctx, data.title, W - mm(50));
+  titleLines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, titleY + mm(10) + i * mm(8.5));
   });
-  cy += infoLines.length * 7 + 5;
 
-  // Department
-  doc.setFont('times', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(200, 16, 46);
-  doc.text(d.department, W / 2, cy, { align: 'center' });
-  cy += 10;
+  /* ── Course info block ── */
+  let cy = titleY + mm(10) + titleLines.length * mm(8.5) + mm(8);
 
-  // Horizontal divider
-  doc.setDrawColor(200, 200, 210);
-  doc.setLineWidth(0.4);
-  doc.line(20, cy, W - 20, cy);
-  cy += 8;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#333';
 
-  // Two-column table
-  const colW = (W - 40) / 2;
-  const col1X = 20, col2X = W / 2 + 5;
-  const tableH = 38;
+  const infoLines = [];
+  if (data.course)     infoLines.push(`Course Title:  ${data.course}`);
+  if (data.courseCode) infoLines.push(`Course Code: ${data.courseCode}`);
+  if (data.year)       infoLines.push(`Year: ${data.year}`);
+  if (data.term)       infoLines.push(`Term: ${data.term}`);
+  if (data.session)    infoLines.push(`Session: ${data.session}`);
+
+  ctx.font = `${mm(5)}px 'Times New Roman', serif`;
+  infoLines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, cy + i * mm(7));
+  });
+
+  cy += infoLines.length * mm(7) + mm(5);
+
+  /* ── Department ── */
+  ctx.fillStyle = '#0b2545';
+  ctx.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
+  ctx.fillText(data.department, W / 2, cy);
+
+  /* ── Divider ── */
+  cy += mm(8);
+  ctx.strokeStyle = '#dde2ea';
+  ctx.lineWidth = mm(0.5);
+  ctx.beginPath();
+  ctx.moveTo(mm(20), cy);
+  ctx.lineTo(W - mm(20), cy);
+  ctx.stroke();
+
+  /* ── Two-column info table ── */
+  cy += mm(20);
+  const colW   = (W - mm(40)) / 2;
+  const col1X  = mm(20);
+  const col2X  = W / 2 + mm(5);
+  const tableH = mm(36);
 
   // Box borders
-  doc.setDrawColor(11, 37, 69);
-  doc.setLineWidth(0.5);
-  doc.rect(col1X, cy, colW - 5, tableH);
-  doc.rect(col2X, cy, colW - 5, tableH);
+  ctx.strokeStyle = '#0b2545';
+  ctx.lineWidth = mm(0.5);
+  // Left box
+  ctx.strokeRect(col1X, cy, colW - mm(5), tableH);
+  // Right box
+  ctx.strokeRect(col2X, cy, colW - mm(5), tableH);
 
-  // Header fill
-  doc.setFillColor(230, 235, 245);
-  doc.rect(col1X, cy, colW - 5, 9, 'F');
-  doc.rect(col2X, cy, colW - 5, 9, 'F');
+  // Box header fills
+  ctx.fillStyle = 'rgba(11,37,69,0.06)';
+  ctx.fillRect(col1X, cy, colW - mm(5), mm(9));
+  ctx.fillRect(col2X, cy, colW - mm(5), mm(9));
 
-  // Box headings
-  doc.setFont('times', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(11, 37, 69);
-  doc.text('Submitted by:', col1X + 3, cy + 6.5);
-  doc.text('Submitted to:', col2X + 3, cy + 6.5);
+  ctx.fillStyle = '#0b2545';
+  ctx.textAlign = 'left';
+  ctx.font = `bold ${mm(4.2)}px 'Times New Roman', serif`;
+  ctx.fillText('Submitted by:', col1X + mm(3), cy + mm(6.5));
+  ctx.fillText('Submitted to:', col2X + mm(3), cy + mm(6.5));
 
-  // Labels
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(80, 80, 80);
-  doc.text('Name:', col1X + 3, cy + 15);
-  doc.text('Name:', col2X + 3, cy + 15);
+  ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
+  ctx.fillStyle = '#555';
+  ctx.fillText('Name:', col1X + mm(3), cy + mm(15));
+  ctx.fillText('Name:', col2X + mm(3), cy + mm(15));
 
-  // Values
-  doc.setFont('times', 'bold');
-  doc.setFontSize(10.5);
-  doc.setTextColor(11, 37, 69);
-  doc.text(d.studentName, col1X + 3, cy + 22);
-  doc.text(d.instructor,  col2X + 3, cy + 22);
+  ctx.fillStyle = '#0b2545';
+  ctx.font = `bold ${mm(5)}px 'Times New Roman', serif`;
+  ctx.fillText(data.studentName, col1X + mm(3), cy + mm(22));
+  ctx.fillText(data.instructor,  col2X + mm(3), cy + mm(22));
 
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(50, 50, 50);
-  doc.text(`ROLL: ${d.roll}`, col1X + 3, cy + 30);
-  if (d.designation) {
-    const dLines = doc.splitTextToSize(d.designation, colW - 10);
-    doc.text(dLines, col2X + 3, cy + 30);
+  ctx.fillStyle = '#333';
+  ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
+  ctx.fillText(`Roll: ${data.roll}`, col1X + mm(3), cy + mm(30));
+  if (data.designation) {
+    const dLines = wrapText(ctx, data.designation, colW - mm(10));
+    dLines.forEach((l, i) => ctx.fillText(l, col2X + mm(3), cy + mm(30) + i * mm(5.5)));
   }
 
-  cy += tableH + 12;
+  /* ── Submission Date ── */
+  cy += tableH + mm(10);
 
-  // Red tick
-  doc.setDrawColor(200, 16, 46);
-  doc.setLineWidth(0.5);
-  doc.line(W / 2, cy, W / 2, cy + 5);
-  cy += 10;
+  cy += mm(40);
 
-  // Submission date
-  if (d.submitDate) {
-    doc.setFont('times', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(11, 37, 69);
-    doc.text(`Submission Date: ${d.submitDate}`, W / 2, cy, { align: 'center' });
+  if (data.submitDate) {
+    ctx.fillStyle = '#0b2545';
+    ctx.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`Submission Date: ${data.submitDate}`, W / 2, cy);
   }
+}
 
-  // Bottom band text
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(232, 160, 32);
-  doc.text(d.university.toUpperCase(), W / 2, H - 20, { align: 'center' });
-
-  // Page number
-  doc.setTextColor(180, 180, 180);
-  doc.setFontSize(9);
-  doc.text('1', W - 14, H - 4, { align: 'right' });
+/* ─── Text wrap helper ──────────────────────────────────────────── */
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  words.forEach(word => {
+    const test = current ? `${current} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  });
+  if (current) lines.push(current);
+  return lines;
 }
 
 /* ─── Toast ────────────────────────────────────────────────────── */
