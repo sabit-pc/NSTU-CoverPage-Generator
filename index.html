@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSTU Assignment Cover Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo-mark">
+        <span class="logo-icon">&#9998;</span>
+        <div>
+          <span class="logo-name">CoverPage Generator</span>
+          <span class="logo-tag">NSTU Edition</span>
+        </div>
+      </div>
+      <span class="header-pill">Assignment Cover Page Generator</span>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="layout">
+
+    <!-- LEFT: FORM -->
+    <section class="form-panel">
+      <h2 class="panel-heading">Fill in Details</h2>
+      <p class="panel-sub">All starred fields are required.</p>
+
+      <!-- University -->
+      <div class="form-section-label">🏛 University Information</div>
+
+      <div class="field">
+        <label>University Name <span class="req">*</span></label>
+        <input id="university" type="text" value="Noakhali Science &amp; Technology University" placeholder="University name" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Location / PO Code</label>
+          <input id="location" type="text" value="Noakhali – 3814" placeholder="e.g. Noakhali – 3814" />
+        </div>
+        <div class="field">
+          <label>Department <span class="req">*</span></label>
+          <input id="department" type="text" value="Department of" placeholder="Department name" />
+        </div>
+      </div>
+
+      <!-- Assignment -->
+      <div class="form-section-label">📄 Assignment Information</div>
+
+      <div class="field">
+        <label>Assignment Title <span class="req">*</span></label>
+        <input id="title" type="text" placeholder="Assignment title" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Course Title <span class="req">*</span></label>
+          <input id="course" type="text" placeholder="Course title" />
+        </div>
+        <div class="field">
+          <label>Course Code</label>
+          <input id="courseCode" type="text" placeholder="e.g. CSE-4101" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Year</label>
+          <input id="year" type="text" placeholder="e.g. 03" />
+        </div>
+        <div class="field">
+          <label>Term</label>
+          <input id="term" type="text" placeholder="e.g. 1" />
+        </div>
+        <div class="field">
+          <label>Session</label>
+          <input id="session" type="text" value="2023-24" placeholder="e.g. 2023-24" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Submission Date <span class="req">*</span></label>
+        <input id="submitDate" type="date" />
+      </div>
+
+      <!-- Student -->
+      <div class="form-section-label">🎓 Student (Submitted By)</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Student Name <span class="req">*</span></label>
+          <input id="studentName" type="text" placeholder="Full name" />
+        </div>
+        <div class="field">
+          <label>Roll No. <span class="req">*</span></label>
+          <input id="roll" type="text" placeholder="e.g. ASH2324355636M" />
+        </div>
+      </div>
+
+      <!-- Instructor -->
+      <div class="form-section-label">👨‍🏫 Instructor (Submitted To)</div>
+      <div class="field">
+        <label>Instructor Name <span class="req">*</span></label>
+        <input id="instructor" type="text" placeholder="Full name" />
+      </div>
+      <div class="field">
+        <label>Designation &amp; Department</label>
+        <input id="designation" type="text" placeholder="e.g. Professor, Dept. of CSE" />
+      </div>
+
+      <!-- Logo upload -->
+      <div class="form-section-label">🖼 University Logo</div>
+      <div class="logo-upload-area" id="logoUploadArea">
+        <div class="logo-upload-inner">
+          <div class="logo-upload-icon">&#128444;</div>
+          <p class="logo-upload-text">NSTU logo pre-loaded. Click to replace.</p>
+          <input type="file" id="logoFile" accept="image/*" hidden />
+          <button class="btn-outline" onclick="document.getElementById('logoFile').click()">Choose Image</button>
+        </div>
+        <img id="logoPreviewThumb" src="" alt="" />
+      </div>
+
+      <!-- Actions -->
+      <div class="action-row">
+        <button class="btn-preview" id="btnPreview" onclick="openPreviewModal()">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        <button class="btn-download" id="btnDownload" onclick="downloadPDF()">
+          <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </section>
+
+    <!-- RIGHT: LIVE MINI PREVIEW -->
+    <section class="preview-panel">
+      <div class="preview-label">Live Preview</div>
+      <div class="mini-preview-wrap">
+        <canvas id="liveCanvas"></canvas>
+      </div>
+      <p class="preview-hint">Updates as you type &nbsp;·&nbsp; Click <strong>Preview</strong> to see full resolution</p>
+    </section>
+
+  </main>
+
+  <!-- ── PREVIEW MODAL ── -->
+  <div class="modal-overlay" id="previewModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">Cover Page Preview</span>
+        <button class="modal-close" onclick="closePreviewModal()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <canvas id="modalCanvas"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline" onclick="closePreviewModal()">Close</button>
+        <button class="btn-download" onclick="downloadPDF()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
