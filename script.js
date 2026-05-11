@@ -386,7 +386,7 @@ function buildJsPDFCover(doc, d, logoSrc) {
   const logoSize = mm(34);
   const logoX = (W - logoSize) / 2;
   const logoY = mm(48);
-  if (logo) {
+  if (logoSrc) {
     doc.save();
     doc.shadowColor = 'rgba(0,0,0,0.15)';
     doc.shadowBlur = mm(3);
