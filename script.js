@@ -298,24 +298,6 @@ function renderLivePreview() {
   drawCover(ctx, W, H, scale, getData(), logoImage);
 }
 
-/* ─── Modal preview ────────────────────────────────────────────── */
-function openPreviewModal() {
-  const modal  = $('previewModal');
-  const canvas = $('modalCanvas');
-  const A4_W   = 794;   // px at 96dpi
-  const A4_H   = 1123;
-  canvas.width  = A4_W * 2;
-  canvas.height = A4_H * 2;
-  canvas.style.width  = A4_W + 'px';
-  canvas.style.height = A4_H + 'px';
-  const ctx = canvas.getContext('2d');
-  ctx.scale(2, 2);
-  const scale = A4_W / 210;
-  drawCover(ctx, A4_W, A4_H, scale, getData(), logoImage);
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
 function closePreviewModal() {
   $('previewModal').classList.remove('open');
   document.body.style.overflow = '';
@@ -372,84 +354,84 @@ function downloadPDF() {
   closePreviewModal();
 }
 
-function buildJsPDFCover(ctx, d, logoSrc) {
+function buildJsPDFCover(doc, d, logoSrc) {
   const mm = v => v * scale; // helper: mm → px
 
-  ctx.clearRect(0, 0, W, H);
+  doc.clearRect(0, 0, W, H);
 
   /* ── Background ── */
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
+  doc.fillStyle = '#ffffff';
+  doc.fillRect(0, 0, W, H);
 
   /* ── Top accent band ── */
-  ctx.fillStyle = '#0b2545';
-  ctx.fillRect(mm(8), mm(8), W - mm(16), mm(22));
+  doc.fillStyle = '#0b2545';
+  doc.fillRect(mm(8), mm(8), W - mm(16), mm(22));
 
   /* ── Bottom accent band ── */
-  ctx.fillStyle = '#0b2545';
-  ctx.fillRect(mm(8), H - mm(5), W - mm(16), mm(22));
+  doc.fillStyle = '#0b2545';
+  doc.fillRect(mm(8), H - mm(5), W - mm(16), mm(22));
 
   /* ── University name (top band) ── */
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.font = `bold ${mm(6.5)}px 'Times New Roman', serif`;
-  ctx.fillText(data.university.toUpperCase(), W / 2, mm(22));
+  doc.fillStyle = '#ffffff';
+  doc.textAlign = 'center';
+  doc.font = `bold ${mm(6.5)}px 'Times New Roman', serif`;
+  doc.fillText(data.university.toUpperCase(), W / 2, mm(22));
 
   /* ── Location below band ── */
-  ctx.fillStyle = '#0b2545';
-  ctx.font = `bold ${mm(5)}px 'Times New Roman', serif`;
-  ctx.fillText(data.location, W / 2, mm(42));
+  doc.fillStyle = '#0b2545';
+  doc.font = `bold ${mm(5)}px 'Times New Roman', serif`;
+  doc.fillText(data.location, W / 2, mm(42));
 
   /* ── Logo ── */
   const logoSize = mm(34);
   const logoX = (W - logoSize) / 2;
   const logoY = mm(48);
   if (logo) {
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.15)';
-    ctx.shadowBlur = mm(3);
-    ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
-    ctx.restore();
+    doc.save();
+    doc.shadowColor = 'rgba(0,0,0,0.15)';
+    doc.shadowBlur = mm(3);
+    doc.drawImage(logo, logoX, logoY, logoSize, logoSize);
+    doc.restore();
   } else {
     // placeholder circle
-    ctx.strokeStyle = '#dde2ea';
-    ctx.lineWidth = mm(0.5);
-    ctx.beginPath();
-    ctx.arc(W / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = '#aab';
-    ctx.font = `${mm(4)}px sans-serif`;
-    ctx.fillText('LOGO', W / 2, logoY + logoSize / 2 + mm(1.5));
+    doc.strokeStyle = '#dde2ea';
+    doc.lineWidth = mm(0.5);
+    doc.beginPath();
+    doc.arc(W / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+    doc.stroke();
+    doc.fillStyle = '#aab';
+    doc.font = `${mm(4)}px sans-serif`;
+    doc.fillText('LOGO', W / 2, logoY + logoSize / 2 + mm(1.5));
   }
 
   /* ── Divider line after logo ── */
   const afterLogo = logoY + logoSize + mm(8);
-  ctx.strokeStyle = '#0b2545';
-  ctx.lineWidth = mm(0.6);
-  ctx.beginPath();
-  ctx.moveTo(mm(50), afterLogo);
-  ctx.lineTo(W - mm(50), afterLogo);
-  ctx.stroke();
+  doc.strokeStyle = '#0b2545';
+  doc.lineWidth = mm(0.6);
+  doc.beginPath();
+  doc.moveTo(mm(50), afterLogo);
+  doc.lineTo(W - mm(50), afterLogo);
+  doc.stroke();
 
   /* ── "Assignment On:" label ── */
   const titleY = afterLogo + mm(10);
-  ctx.fillStyle = '#0b2545';
-  ctx.font = `bold ${mm(5)}px 'Times New Roman', serif`;
-  ctx.fillText('Assignment On:', W / 2, titleY);
+  doc.fillStyle = '#0b2545';
+  doc.font = `bold ${mm(5)}px 'Times New Roman', serif`;
+  doc.fillText('Assignment On:', W / 2, titleY);
 
   /* ── Assignment title (wrapped) ── */
-  ctx.font = `bold ${mm(8)}px 'Times New Roman', serif`;
-  ctx.fillStyle = '#1a1a2e';
-  const titleLines = wrapText(ctx, data.title, W - mm(50));
+  doc.font = `bold ${mm(8)}px 'Times New Roman', serif`;
+  doc.fillStyle = '#1a1a2e';
+  const titleLines = wrapText(doc, data.title, W - mm(50));
   titleLines.forEach((line, i) => {
-    ctx.fillText(line, W / 2, titleY + mm(10) + i * mm(8.5));
+    doc.fillText(line, W / 2, titleY + mm(10) + i * mm(8.5));
   });
 
   /* ── Course info block ── */
   let cy = titleY + mm(10) + titleLines.length * mm(8.5) + mm(8);
 
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#333';
+  doc.textAlign = 'center';
+  doc.fillStyle = '#333';
 
   const infoLines = [];
   if (data.course)     infoLines.push(`Course Title:  ${data.course}`);
@@ -458,26 +440,26 @@ function buildJsPDFCover(ctx, d, logoSrc) {
   if (data.term)       infoLines.push(`Term: ${data.term}`);
   if (data.session)    infoLines.push(`Session: ${data.session}`);
 
-  ctx.font = `${mm(5)}px 'Times New Roman', serif`;
+  doc.font = `${mm(5)}px 'Times New Roman', serif`;
   infoLines.forEach((line, i) => {
-    ctx.fillText(line, W / 2, cy + i * mm(7));
+    doc.fillText(line, W / 2, cy + i * mm(7));
   });
 
   cy += infoLines.length * mm(7) + mm(5);
 
   /* ── Department ── */
-  ctx.fillStyle = '#0b2545';
-  ctx.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
-  ctx.fillText(data.department, W / 2, cy);
+  doc.fillStyle = '#0b2545';
+  doc.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
+  doc.fillText(data.department, W / 2, cy);
 
   /* ── Divider ── */
   cy += mm(8);
-  ctx.strokeStyle = '#dde2ea';
-  ctx.lineWidth = mm(0.5);
-  ctx.beginPath();
-  ctx.moveTo(mm(20), cy);
-  ctx.lineTo(W - mm(20), cy);
-  ctx.stroke();
+  doc.strokeStyle = '#dde2ea';
+  doc.lineWidth = mm(0.5);
+  doc.beginPath();
+  doc.moveTo(mm(20), cy);
+  doc.lineTo(W - mm(20), cy);
+  doc.stroke();
 
   /* ── Two-column info table ── */
   cy += mm(20);
@@ -487,40 +469,40 @@ function buildJsPDFCover(ctx, d, logoSrc) {
   const tableH = mm(36);
 
   // Box borders
-  ctx.strokeStyle = '#0b2545';
-  ctx.lineWidth = mm(0.5);
+  doc.strokeStyle = '#0b2545';
+  doc.lineWidth = mm(0.5);
   // Left box
-  ctx.strokeRect(col1X, cy, colW - mm(5), tableH);
+  doc.strokeRect(col1X, cy, colW - mm(5), tableH);
   // Right box
-  ctx.strokeRect(col2X, cy, colW - mm(5), tableH);
+  doc.strokeRect(col2X, cy, colW - mm(5), tableH);
 
   // Box header fills
-  ctx.fillStyle = 'rgba(11,37,69,0.06)';
-  ctx.fillRect(col1X, cy, colW - mm(5), mm(9));
-  ctx.fillRect(col2X, cy, colW - mm(5), mm(9));
+  doc.fillStyle = 'rgba(11,37,69,0.06)';
+  doc.fillRect(col1X, cy, colW - mm(5), mm(9));
+  doc.fillRect(col2X, cy, colW - mm(5), mm(9));
 
-  ctx.fillStyle = '#0b2545';
-  ctx.textAlign = 'left';
-  ctx.font = `bold ${mm(4.2)}px 'Times New Roman', serif`;
-  ctx.fillText('Submitted by:', col1X + mm(3), cy + mm(6.5));
-  ctx.fillText('Submitted to:', col2X + mm(3), cy + mm(6.5));
+  doc.fillStyle = '#0b2545';
+  doc.textAlign = 'left';
+  doc.font = `bold ${mm(4.2)}px 'Times New Roman', serif`;
+  doc.fillText('Submitted by:', col1X + mm(3), cy + mm(6.5));
+  doc.fillText('Submitted to:', col2X + mm(3), cy + mm(6.5));
 
-  ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
-  ctx.fillStyle = '#555';
-  ctx.fillText('Name:', col1X + mm(3), cy + mm(15));
-  ctx.fillText('Name:', col2X + mm(3), cy + mm(15));
+  doc.font = `${mm(3.8)}px 'Times New Roman', serif`;
+  doc.fillStyle = '#555';
+  doc.fillText('Name:', col1X + mm(3), cy + mm(15));
+  doc.fillText('Name:', col2X + mm(3), cy + mm(15));
 
-  ctx.fillStyle = '#0b2545';
-  ctx.font = `bold ${mm(5)}px 'Times New Roman', serif`;
-  ctx.fillText(data.studentName, col1X + mm(3), cy + mm(22));
-  ctx.fillText(data.instructor,  col2X + mm(3), cy + mm(22));
+  doc.fillStyle = '#0b2545';
+  doc.font = `bold ${mm(5)}px 'Times New Roman', serif`;
+  doc.fillText(data.studentName, col1X + mm(3), cy + mm(22));
+  doc.fillText(data.instructor,  col2X + mm(3), cy + mm(22));
 
-  ctx.fillStyle = '#333';
-  ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
-  ctx.fillText(`Roll: ${data.roll}`, col1X + mm(3), cy + mm(30));
+  doc.fillStyle = '#333';
+  doc.font = `${mm(3.8)}px 'Times New Roman', serif`;
+  doc.fillText(`Roll: ${data.roll}`, col1X + mm(3), cy + mm(30));
   if (data.designation) {
-    const dLines = wrapText(ctx, data.designation, colW - mm(10));
-    dLines.forEach((l, i) => ctx.fillText(l, col2X + mm(3), cy + mm(30) + i * mm(5.5)));
+    const dLines = wrapText(doc, data.designation, colW - mm(10));
+    dLines.forEach((l, i) => doc.fillText(l, col2X + mm(3), cy + mm(30) + i * mm(5.5)));
   }
 
   /* ── Submission Date ── */
@@ -529,29 +511,11 @@ function buildJsPDFCover(ctx, d, logoSrc) {
   cy += mm(40);
 
   if (data.submitDate) {
-    ctx.fillStyle = '#0b2545';
-    ctx.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText(`Submission Date: ${data.submitDate}`, W / 2, cy);
+    doc.fillStyle = '#0b2545';
+    doc.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
+    doc.textAlign = 'center';
+    doc.fillText(`Submission Date: ${data.submitDate}`, W / 2, cy);
   }
-}
-
-/* ─── Text wrap helper ──────────────────────────────────────────── */
-function wrapText(ctx, text, maxWidth) {
-  const words = text.split(' ');
-  const lines = [];
-  let current = '';
-  words.forEach(word => {
-    const test = current ? `${current} ${word}` : word;
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = test;
-    }
-  });
-  if (current) lines.push(current);
-  return lines;
 }
 
 /* ─── Toast ────────────────────────────────────────────────────── */
