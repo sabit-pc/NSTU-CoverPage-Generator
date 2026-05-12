@@ -5,75 +5,102 @@
 'use strict';
 
 let teacherData = [];
+let selectedTeachers = []; // holds multiple teachers
 
-// 1. Fetch and Parse CSV
+// 1. Load CSV
 async function loadTeacherData() {
     try {
         const response = await fetch('teachers.txt');
         if (!response.ok) throw new Error("File not found");
         const data = await response.text();
-        
-        // Split by lines and filter out empty lines
         const rows = data.split('\n').filter(row => row.trim() !== '');
-        const headers = rows[0].split(','); // name, department, designation
         teacherData = rows.slice(1).map(row => {
             const cols = row.split(',');
-            return {
-                name: cols[0]?.trim(),
-                dept: cols[1]?.trim(),
-                desg: cols[2]?.trim()
-            }
+            return { name: cols[0]?.trim(), dept: cols[1]?.trim(), desg: cols[2]?.trim() };
         });
-        console.log("Teacher data loaded:", teacherData);
     } catch (err) {
-        console.warn("Search unavailable: If testing locally, upload to GitHub or use a local server.", err);
+        console.warn("Teacher search unavailable:", err);
     }
 }
 
-// 2. Search Logic
+// 2. Search
 const searchInput = document.getElementById('teacherSearch');
-const resultsDiv = document.getElementById('searchResults');
+const resultsDiv  = document.getElementById('searchResults');
 
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
         resultsDiv.innerHTML = '';
-        
         if (term.length < 2) return;
 
-        const matches = teacherData.filter(t => 
-            (t.name && t.name.toLowerCase().includes(term)) || 
+        const matches = teacherData.filter(t =>
+            (t.name && t.name.toLowerCase().includes(term)) ||
             (t.dept && t.dept.toLowerCase().includes(term))
         );
 
         matches.forEach(teacher => {
             const div = document.createElement('div');
             div.className = 'search-item';
-            div.style.padding = "10px";
-            div.style.cursor = "pointer";
-            div.style.borderBottom = "1px solid #eee";
-            div.innerHTML = `<strong>${teacher.name}</strong><br><small>${teacher.dept}</small>`;
-            
+            div.innerHTML = `<strong>${teacher.name}</strong><br><small>${teacher.desg} — ${teacher.dept}</small>`;
             div.onclick = () => {
-                document.getElementById('instructor').value = teacher.name;
-                document.getElementById('depart').value = teacher.dept;
-                document.getElementById('designation').value = teacher.desg;
-                document.getElementById('department').value = teacher.dept;
-
-                document.getElementById('display-name').textContent = "Name: " + teacher.name;
-                document.getElementById('display-dept').textContent = "Department: " + teacher.dept;
-                document.getElementById('display-desg').textContent = "Designation: " + teacher.desg;
-    
-                // 3. Show the display area
-                document.getElementById('selectionDisplay').style.display = 'block';
-                
-                resultsDiv.innerHTML = ''; 
-                searchInput.value = '';     
-                if (typeof renderLivePreview === "function") renderLivePreview();
+                addTeacher(teacher);
+                resultsDiv.innerHTML = '';
+                searchInput.value = '';
             };
             resultsDiv.appendChild(div);
         });
     });
+}
+
+// 3. Add teacher to the list (max 3)
+function addTeacher(teacher) {
+    if (selectedTeachers.length >= 3) {
+        alert("Maximum 3 teachers allowed.");
+        return;
+    }
+    // Prevent duplicate
+    if (selectedTeachers.find(t => t.name === teacher.name)) {
+        alert("This teacher is already added.");
+        return;
+    }
+    selectedTeachers.push(teacher);
+    renderTeacherList();
+    if (typeof renderLivePreview === "function") renderLivePreview();
+}
+
+// 4. Remove a teacher by index
+function removeTeacher(index) {
+    selectedTeachers.splice(index, 1);
+    renderTeacherList();
+    if (typeof renderLivePreview === "function") renderLivePreview();
+}
+
+// 5. Render the selected teacher cards
+function renderTeacherList() {
+    const container = document.getElementById('selectionDisplay');
+    if (!container) return;
+
+    if (selectedTeachers.length === 0) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+    }
+
+    container.style.display = 'block';
+    container.innerHTML = selectedTeachers.map((t, i) => `
+        <div class="teacher-card">
+            <div class="teacher-card-info">
+                <span class="teacher-card-name">${t.name}</span>
+                <span class="teacher-card-sub">${t.desg} — ${t.dept}</span>
+            </div>
+            <button class="teacher-card-remove" onclick="removeTeacher(${i})" title="Remove">&#10005;</button>
+        </div>
+    `).join('');
+}
+
+// 6. Getter — use this in getData() and buildJsPDFCover()
+function getTeachers() {
+    return selectedTeachers; // array of {name, dept, desg}
 }
 
 // Close search if clicking outside
@@ -126,9 +153,7 @@ function getData() {
     submitDate:  formatDate(val('submitDate')),
     studentName: val('studentName') || 'Student Name',
     roll:        val('roll')        || '',
-    instructor:  val('instructor')  || 'Instructor Name',
-    designation: val('designation'),
-    depart:      val('depart') ||'Department',
+    teachers:    getTeachers(),
   };
 }
 
@@ -269,7 +294,7 @@ function drawCover(ctx, W, H, scale, data, logo) {
   /* Department */
   ctx.fillStyle = '#0b2545';
   ctx.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
-  ctx.fillText(`Department of  ${data.depart}`, W / 2, cy);
+  ctx.fillText(`Department of  ${data.department}`, W / 2, cy);
   cy += mm(8);
 
   /* Thin divider */
@@ -285,47 +310,64 @@ function drawCover(ctx, W, H, scale, data, logo) {
   const colW  = (W - mm(38)) / 2;
   const col1X = mm(18);
   const col2X = W / 2 + mm(4);
-  const tH    = mm(42);
+  const teachers = data.teachers || [];
 
-  ctx.strokeStyle = '#0b2545';
-  ctx.lineWidth = mm(0.5);
-  ctx.strokeRect(col1X, cy, colW - mm(4), tH);
-  ctx.strokeRect(col2X, cy, colW - mm(4), tH);
+  // --- DYNAMIC HEIGHT CALCULATION ---
+  const headerH = mm(9); // Blue header height
+  const topPadding = mm(14); // Space from top of box to first name
+  const teacherGroupSpacing = mm(18);
+  
+  // Calculate height needed for teachers. 
+  // If no teachers, use a default height (e.g., mm(42))
+  const contentH = teachers.length > 0 ? topPadding + (teachers.length * teacherGroupSpacing) : mm(42);
+  const tH = Math.max(mm(42), contentH); // Ensure a minimum height of 42mm
 
+
+  // 2. Draw Header Bands
   ctx.fillStyle = 'rgba(11,37,69,0.07)';
-  ctx.fillRect(col1X, cy, colW - mm(4), mm(9));
-  ctx.fillRect(col2X, cy, colW - mm(4), mm(9));
+  ctx.fillRect(col1X, cy, colW - mm(4), headerH);
+  ctx.fillRect(col2X, cy, colW - mm(4), headerH);
 
+  // 3. Static Text (Headers)
   ctx.fillStyle = '#0b2545';
   ctx.textAlign = 'left';
   ctx.font = `bold ${mm(4.2)}px 'Times New Roman', serif`;
   ctx.fillText('Submitted by:', col1X + mm(3), cy + mm(6.5));
   ctx.fillText('Submitted to:', col2X + mm(3), cy + mm(6.5));
 
+  // 4. Student Side (Remains static at the top of the box)
   ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
   ctx.fillStyle = '#555';
   ctx.fillText('Name:', col1X + mm(3), cy + mm(15));
-  ctx.fillText('Name:', col2X + mm(3), cy + mm(15));
 
   ctx.fillStyle = '#0b2545';
   ctx.font = `bold ${mm(4.5)}px 'Times New Roman', serif`;
   ctx.fillText(data.studentName, col1X + mm(3), cy + mm(23));
-  ctx.fillText(data.instructor,  col2X + mm(3), cy + mm(23));
 
   ctx.fillStyle = '#333';
   ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
   ctx.fillText(`Roll: ${data.roll}`, col1X + mm(3), cy + mm(31));
-  if (data.designation) {
-    wrapText(ctx, data.designation, colW - mm(10))
-      .forEach((l, i) => ctx.fillText(l, col2X + mm(3), cy + mm(31) + i * mm(5.5)));
-  }
 
-  ctx.fillStyle = '#333';
+  // 5. Teachers Side (Dynamic Loop)
+  ctx.fillStyle = '#555';
   ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
-  if (data.depart) {
-    wrapText(ctx, data.depart, colW - mm(10))
-      .forEach((l, i) => ctx.fillText(l, col2X + mm(3), cy + mm(37) + i * mm(5.5)));
-  }
+  ctx.fillText('Name(s):', col2X + mm(3), cy + mm(15));
+
+  teachers.forEach((t, i) => {
+    // baseY starts after the "Name:" label
+    const baseY = cy + mm(23) + i * teacherGroupSpacing;
+
+    ctx.font = `bold ${mm(4.2)}px 'Times New Roman', serif`;
+    ctx.fillStyle = '#0b2545';
+    ctx.fillText(t.name, col2X + mm(3), baseY);
+
+    ctx.font = `${mm(3.8)}px 'Times New Roman', serif`;
+    ctx.fillStyle = '#333';
+    ctx.fillText(t.desg, col2X + mm(3), baseY + mm(6));
+    ctx.fillText(t.dept, col2X + mm(3), baseY + mm(11));
+  });
+
+  // Update cy so elements following the table start at the right place
 
   cy += tH + mm(14);
 
@@ -399,7 +441,6 @@ function downloadPDF() {
     submitDate:  'Submission Date',
     studentName: 'Student Name',
     roll:        'Roll No.',
-    instructor:  'Instructor Name',
   };
 
   const missing = [];
@@ -427,7 +468,6 @@ function downloadPDF() {
   const code   = (val('courseCode') || val('course')).replace(/\s+/g, '_') || 'assignment';
   doc.save(`NSTU_Cover_${name}_${code}.pdf`);
   showToast('✅ PDF downloaded successfully!');
-  closePreviewModal();
 }
 
 /* ─── jsPDF vector cover builder ───────────────────────────────── */
@@ -523,58 +563,80 @@ function buildJsPDFCover(doc, d, logoSrc) {
   doc.line(18, cy, W - 18, cy);
   cy += 8;
 
-  /* Two-column table */
-  const colW  = (W - 38) / 2;
-  const col1X = 18;
-  const col2X = W / 2 + 4;
-  const tH    = 42;
+// --- 1. SETUP & DIMENSIONS ---
+const colW = (W - 38) / 2;
+const col1X = 18;
+const col2X = W / 2 + 4;
+const teachers = d.teachers || [];
 
-  doc.setDrawColor(11, 37, 69);
-  doc.setLineWidth(0.5);
-  doc.rect(col1X, cy, colW - 4, tH);
-  doc.rect(col2X, cy, colW - 4, tH);
+// --- 2. DYNAMIC HEIGHT CALCULATION ---
+const headerH = 9; // Assuming mm based on your usage
+const topPadding = 14; 
+const teacherGroupSpacing = 15; // Adjusted spacing for better fit
 
-  doc.setFillColor(224, 230, 242);
-  doc.rect(col1X, cy, colW - 4, 9, 'F');
-  doc.rect(col2X, cy, colW - 4, 9, 'F');
+// Calculate height needed for the right column (teachers)
+// We compare the student side (approx 42mm) vs the teacher side
+const studentSideH = 42;
+const teacherSideH = teachers.length > 0 
+  ? topPadding + (teachers.length * teacherGroupSpacing) 
+  : 42;
+
+const dynamicTH = Math.max(studentSideH, teacherSideH);
+
+// Headers
+doc.setFillColor(224, 230, 242);
+doc.rect(col1X, cy, colW - 4, headerH, 'F');
+doc.rect(col2X, cy, colW - 4, headerH, 'F');
+
+// Header Text
+doc.setFont('times', 'bold');
+doc.setFontSize(10);
+doc.setTextColor(11, 37, 69);
+doc.text('Submitted by:', col1X + 3, cy + 6.5);
+doc.text('Submitted to:', col2X + 3, cy + 6.5);
+
+// --- 4. LEFT COLUMN (STUDENT) ---
+doc.setFont('times', 'normal');
+doc.setFontSize(9.5);
+doc.setTextColor(80, 80, 80);
+doc.text('Name:', col1X + 3, cy + 15);
+
+doc.setFont('times', 'bold');
+doc.setFontSize(11);
+doc.setTextColor(11, 37, 69);
+doc.text(d.studentName || 'N/A', col1X + 3, cy + 23);
+
+doc.setFont('times', 'normal');
+doc.setFontSize(9.5);
+doc.setTextColor(50, 50, 50);
+doc.text(`Roll: ${d.roll || 'N/A'}`, col1X + 3, cy + 31);
+
+// --- 5. RIGHT COLUMN (TEACHERS) ---
+// Static "Name:" label for the teacher column
+doc.setFont('times', 'normal');
+doc.setFontSize(9.5);
+doc.setTextColor(80, 80, 80);
+doc.text('Name:', col2X + 3, cy + 15);
+
+teachers.forEach((t, i) => {
+  // baseY starts after the "Name:" label
+  const baseY = cy + 23 + (i * teacherGroupSpacing);
 
   doc.setFont('times', 'bold');
   doc.setFontSize(10);
   doc.setTextColor(11, 37, 69);
-  doc.text('Submitted by:', col1X + 3, cy + 6.5);
-  doc.text('Submitted to:', col2X + 3, cy + 6.5);
+  doc.text(t.name || '', col2X + 3, baseY);
 
-  doc.setFont('times', 'normal');
+  doc.setFont('times', 'normal'); // Designation usually looks better in normal
   doc.setFontSize(9.5);
-  doc.setTextColor(80, 80, 80);
-  doc.text('Name:', col1X + 3, cy + 15);
-  doc.text('Name:', col2X + 3, cy + 15);
+  doc.text(t.desg || '', col2X + 3, baseY + 5);
+  
+  doc.setFontSize(9);
+  doc.text(t.dept || '', col2X + 3, baseY + 10);
+});
 
-  doc.setFont('times', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(11, 37, 69);
-  doc.text(d.studentName, col1X + 3, cy + 23);
-  doc.text(d.instructor,  col2X + 3, cy + 23);
 
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(50, 50, 50);
-  doc.text(`Roll: ${d.roll}`, col1X + 3, cy + 31);
-  if (d.designation) {
-    const dLines = doc.splitTextToSize(d.designation, colW - 10);
-    doc.text(dLines, col2X + 3, cy + 31);
-  }
-
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(50, 50, 50);
-  doc.text(`Roll: ${d.roll}`, col1X + 3, cy + 31);
-  if (d.depart) {
-    const dLines = doc.splitTextToSize(d.depart, colW - 10);
-    doc.text(dLines, col2X + 3, cy + 37);
-  }
-
-  cy += tH + 14;
+  cy += dynamicTH + 14;
 
   /* Submission date */
   if (d.submitDate) {
@@ -588,8 +650,6 @@ function buildJsPDFCover(doc, d, logoSrc) {
   doc.setFont('times', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(232, 160, 32);
-  doc.text(d.university.toUpperCase(), W / 2, H - 20, { align: 'center' });
-
   /* Page number */
   doc.setTextColor(160, 160, 160);
   doc.setFontSize(9);

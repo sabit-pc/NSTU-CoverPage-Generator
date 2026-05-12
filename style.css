@@ -116,6 +116,28 @@ input {
   margin-bottom: 2px;
 }
 
+.teacher-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0f4ff;
+  border: 1.5px solid #c5d0e8;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+.teacher-card-info { display: flex; flex-direction: column; gap: 3px; }
+.teacher-card-name { font-weight: 700; font-size: 0.88rem; color: #0b2545; }
+.teacher-card-sub  { font-size: 0.78rem; color: #5a6a85; }
+.teacher-card-remove {
+  background: none; border: none; cursor: pointer;
+  color: #c8102e; font-size: 1rem; padding: 4px 8px;
+  border-radius: 6px; transition: background 0.15s;
+}
+.teacher-card-remove:hover { background: #fde8ec; }
+.search-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+.search-item:hover { background: #f0f4ff; }
+
 @keyframes fadeIn {
   from {
     opacity: 0;
