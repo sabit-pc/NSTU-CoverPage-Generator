@@ -39,6 +39,95 @@ body {
   flex-direction: column;
 }
 
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+/* Search Styles */
+.search-section {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.search-card {
+  padding: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.search-card:hover {
+  background: #f0f4f8;
+}
+
+.search-card strong {
+  display: block;
+  color: var(--navy);
+}
+
+.search-card small {
+  color: #666;
+}
+
+.selection-display {
+  margin-top: 15px;
+  padding: 12px;
+  background: #eef2f7;
+  border-radius: 8px;
+  border-left: 4px solid var(--navy);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.selected-info-card {
+  font-size: 0.9rem;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.selected-info-card strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ────────── HEADER ────────── */
 .site-header {
   background: var(--navy);
@@ -324,8 +413,9 @@ input.error {
 }
 
 #liveCanvas {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  height: auto !important;
+  /* Forces aspect ratio maintenance */
   display: block;
 }
 

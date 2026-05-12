@@ -32,6 +32,23 @@
       <h2 class="panel-heading">Fill in Details</h2>
       <p class="panel-sub">All starred fields are required.</p>
 
+      <div class="form-group search-section">
+        <label for="teacherSearch">Quick Search Teacher</label>
+        <div class="search-container">
+          <input type="text" id="teacherSearch" placeholder="Type name or department...">
+          <div id="searchResults" class="search-results"></div>
+        </div>
+      
+        <div id="selectionDisplay" class="selection-display" style="display: none;">
+          <p><strong>Selected Teacher:</strong></p>
+          <div class="selected-info-card">
+            <span id="display-name"></span><br>
+            <small id="display-dept"></small><br>
+            <small id="display-desg"></small>
+          </div>
+        </div>
+      </div>
+
       <!-- University -->
       <div class="form-section-label">🏛 University Information</div>
 
@@ -46,7 +63,7 @@
         </div>
         <div class="field">
           <label>Department <span class="req">*</span></label>
-          <input id="department" type="text" value="Department of" placeholder="Department name" />
+          <input id="department" type="text" placeholder="Department name" />
         </div>
       </div>
 
@@ -106,8 +123,13 @@
         <input id="instructor" type="text" placeholder="Full name" />
       </div>
       <div class="field">
-        <label>Designation &amp; Department</label>
-        <input id="designation" type="text" placeholder="e.g. Professor, Dept. of CSE" />
+        <label>Designation</label>
+        <input id="designation" type="text" placeholder="e.g. Professor" />
+      </div>
+
+      <div class="field">
+        <label>Department</label>
+        <input id="depart" type="text" placeholder="e.g. Dept. of CSE" />
       </div>
 
       <!-- Logo upload -->
