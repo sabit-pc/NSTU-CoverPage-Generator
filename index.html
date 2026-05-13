@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NSTU Assignment Cover Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <title>CoverPage Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -15,13 +18,12 @@
   <header class="site-header">
     <div class="header-inner">
       <div class="logo-mark">
-        <span class="logo-icon">&#9998;</span>
-        <div>
-          <span class="logo-name">CoverPage Generator</span>
+        <img src="images/paper.png" alt="Description" class="my-image" />        <div>
+          <span class="logo-name">Cover Page Generator</span>
           <span class="logo-tag">NSTU Edition</span>
         </div>
       </div>
-      <span class="header-pill">Assignment Cover Page Generator</span>
+      <span class="header-pill">Assignment/Lab/Report/Proposal Cover Page Generator</span>
     </div>
   </header>
 
@@ -32,9 +34,11 @@
     <section class="form-panel">
       <h2 class="panel-heading">Fill in Details</h2>
       <p class="panel-sub">All starred fields are required.</p>
+      <p class="panel-sub">Information added based on NSTU Diary</p>
 
       <div class="form-group search-section">
-        <label for="teacherSearch">Quick Search Teacher</label>
+        <label for="teacherSearch">Search Teacher</label>
+        <label for="teacherSearch">Add upto 3 Teachers if needed</label>
         <div class="search-container">
           <input type="text" id="teacherSearch" placeholder="Type name or department...">
           <div id="searchResults" class="search-results"></div>

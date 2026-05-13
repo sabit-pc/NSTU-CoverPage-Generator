@@ -481,18 +481,12 @@ function buildJsPDFCover(doc, d, logoSrc) {
   doc.text(d.university.toUpperCase(), W / 2, 22, { align: 'center' });
 
  /* Location */
-  doc.setFontSize(10);
+  doc.setFontSize(13);
   doc.setTextColor(11, 37, 69);
   doc.text(d.location, W / 2, 40, { align: 'center' });
 
-  /* Department under location */
-  doc.setFont('times', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(80, 80, 80);
-  doc.text(d.department, W / 2, 47, { align: 'center' });
-
   /* Logo — centered with breathing room */
-  let cy = 55;
+  let cy = 48;
   if (logoSrc) {
     try {
       let fmt = 'PNG';
@@ -500,7 +494,7 @@ function buildJsPDFCover(doc, d, logoSrc) {
       else if (logoSrc.startsWith('data:image/jpg'))  fmt = 'JPEG';
       else if (logoSrc.startsWith('data:image/webp')) fmt = 'WEBP';
       else if (logoSrc.startsWith('data:image/gif'))  fmt = 'GIF';
-      const lW = 34, lH = 38;
+      const lW = 34, lH = 50;
       doc.addImage(logoSrc, fmt, (W - lW) / 2, cy, lW, lH);
       cy += lH + 7; // logo height + gap
     } catch (e) {
@@ -512,21 +506,21 @@ function buildJsPDFCover(doc, d, logoSrc) {
   /* Divider */
   doc.setDrawColor(11, 37, 69);
   doc.setLineWidth(0.5);
-  doc.line(40, cy, W - 40, cy);
+  doc.line(100, cy, W - 100, cy);
   cy += 10;
 
   /* Assignment Type label (dynamic) */
   const assignTypeEl = document.getElementById('assignmentType');
   const assignType = assignTypeEl ? assignTypeEl.value : 'Assignment On:';
   doc.setFont('times', 'bold');
-  doc.setFontSize(11);
+  doc.setFontSize(16);
   doc.setTextColor(11, 37, 69);
   doc.text(assignType, W / 2, cy, { align: 'center' });
   cy += 10;
 
   /* Title */
   doc.setFont('times', 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(15);
   doc.setTextColor(26, 26, 46);
   const titleLines = doc.splitTextToSize(d.title, 160);
   doc.text(titleLines, W / 2, cy, { align: 'center' });
@@ -535,7 +529,7 @@ function buildJsPDFCover(doc, d, logoSrc) {
 
   /* Course info */
   doc.setFont('times', 'normal');
-  doc.setFontSize(13);
+  doc.setFontSize(13.5);
   doc.setTextColor(34, 34, 34);
   const infoLines = [];
   if (d.course)     infoLines.push(`Course Title:  ${d.course}`);
@@ -551,7 +545,7 @@ function buildJsPDFCover(doc, d, logoSrc) {
   doc.setFont('times', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(11, 37, 69);
-  doc.text(d.department, W / 2, cy, { align: 'center' });
+  doc.text(`Department of ${d.department}`, W / 2, cy, { align: 'center' });
   cy += 9;
 
   /* Divider */
@@ -569,7 +563,7 @@ const teachers = d.teachers || [];
 // --- 2. DYNAMIC HEIGHT CALCULATION ---
 const headerH = 9; // Assuming mm based on your usage
 const topPadding = 14; 
-const teacherGroupSpacing = 15; // Adjusted spacing for better fit
+const teacherGroupSpacing = 18; // Adjusted spacing for better fit
 
 // Calculate height needed for the right column (teachers)
 // We compare the student side (approx 42mm) vs the teacher side
@@ -587,7 +581,7 @@ doc.rect(col2X, cy, colW - 4, headerH, 'F');
 
 // Header Text
 doc.setFont('times', 'bold');
-doc.setFontSize(10);
+doc.setFontSize(13);
 doc.setTextColor(11, 37, 69);
 doc.text('Submitted by:', col1X + 3, cy + 6.5);
 doc.text('Submitted to:', col2X + 3, cy + 6.5);
@@ -599,12 +593,12 @@ doc.setTextColor(80, 80, 80);
 doc.text('Name:', col1X + 3, cy + 15);
 
 doc.setFont('times', 'bold');
-doc.setFontSize(14);
+doc.setFontSize(16);
 doc.setTextColor(11, 37, 69);
 doc.text(d.studentName || 'N/A', col1X + 3, cy + 23);
 
 doc.setFont('times', 'normal');
-doc.setFontSize(9.5);
+doc.setFontSize(14);
 doc.setTextColor(50, 50, 50);
 doc.text(`Roll: ${d.roll || 'N/A'}`, col1X + 3, cy + 31);
 
@@ -615,25 +609,31 @@ doc.setFontSize(9.5);
 doc.setTextColor(80, 80, 80);
 doc.text('Name:', col2X + 3, cy + 15);
 
+let currentTeacherY = cy + 23;
+
 teachers.forEach((t, i) => {
-  // baseY starts after the "Name:" label
-  const baseY = cy + 23 + (i * teacherGroupSpacing);
-
   doc.setFont('times', 'bold');
-  doc.setFontSize(14);
+  doc.setFontSize(15);
   doc.setTextColor(11, 37, 69);
-  doc.text(t.name || '', col2X + 3, baseY);
+  doc.text(t.name || '', col2X + 3, currentTeacherY);
 
-  doc.setFont('times', 'normal'); // Designation usually looks better in normal
+  doc.setFont('times', 'normal');
   doc.setFontSize(11);
-  doc.text(t.desg || '', col2X + 3, baseY + 5);
+  doc.text(t.desg || '', col2X + 3, currentTeacherY + 5);
   
-  doc.setFontSize(11);
-  doc.text(t.dept || '', col2X + 3, baseY + 10);
+  // --- Department Wrap Logic ---
+  const deptText = `Dept of ${t.dept || ''}`;
+  const maxDeptWidth = colW - 10;
+  const wrappedDept = doc.splitTextToSize(deptText, maxDeptWidth);
+  
+  doc.text(wrappedDept, col2X + 3, currentTeacherY + 10);
+
+  const deptLines = wrappedDept.length;
+  currentTeacherY += teacherGroupSpacing + (deptLines > 1 ? (deptLines - 1) * 5 : 0);
 });
 
 
-  cy += dynamicTH + 14;
+  cy += dynamicTH + 27;
 
   /* Submission date */
   if (d.submitDate) {
