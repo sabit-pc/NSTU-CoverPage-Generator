@@ -8,6 +8,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
+<script type="module">
+  import { watchAuthState } from "./auth.js";
+  watchAuthState(user => {
+    if (!user) window.location.href = "auth.html";
+  }, true);
+</script>
 <body>
 
   <!-- ── HEADER ── -->
