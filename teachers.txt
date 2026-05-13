@@ -1,8 +1,8 @@
-name,department,designation
-Dr. Mohammad Mohinuzzaman,Environmental Science and Disaster Management,Professor
-Dr. Jayanta Kumar Basak,Environmental Science and Disaster Management,Professor
-Tanuja Barua,Environmental Science and Disaster Management,Assistant Professor
-Sanjay Saha Sonet,Environmental Science and Disaster Management,Assistant Professor
-Pinaky Chowdhury,Environmental Science and Disaster Management,Assistant Professor
-Sajib Ahmed,Environmental Science and Disaster Management,Assistant Professor
-Iftekhar Mahmud Towhid,Computer Science and Telecommunication Engineering,Assistant Professor
+name,department,designation,short
+Dr. Mohammad Mohinuzzaman,Environmental Science and Disaster Management,Professor,ESDM
+Dr. Jayanta Kumar Basak,Environmental Science and Disaster Management,Professor,ESDM
+Tanuja Barua,Environmental Science and Disaster Management,Assistant Professor,ESDM
+Sanjay Saha Sonet,Environmental Science and Disaster Management,Assistant Professor,ESDM
+Pinaky Chowdhury,Environmental Science and Disaster Management,Assistant Professor,ESDM
+Sajib Ahmed,Environmental Science and Disaster Management,Assistant Professor,ESDM
+Iftekhar Mahmud Towhid,Computer Science and Telecommunication Engineering,Assistant Professor,CSTE

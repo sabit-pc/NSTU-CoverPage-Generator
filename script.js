@@ -16,7 +16,8 @@ async function loadTeacherData() {
         const rows = data.split('\n').filter(row => row.trim() !== '');
         teacherData = rows.slice(1).map(row => {
             const cols = row.split(',');
-            return { name: cols[0]?.trim(), dept: cols[1]?.trim(), desg: cols[2]?.trim() };
+            return { name: cols[0]?.trim(), dept: cols[1]?.trim(), desg: cols[2]?.trim(), short: cols[3]?.trim() };
+
         });
     } catch (err) {
         console.warn("Teacher search unavailable:", err);
@@ -50,25 +51,31 @@ if (searchInput) {
             resultsDiv.appendChild(div);
         });
     });
-}
+  }
 
-// 3. Add teacher to the list (max 3)
-function addTeacher(teacher) {
-    if (selectedTeachers.length >= 3) {
-        alert("Maximum 3 teachers allowed.");
-        return;
-    }
-    // Prevent duplicate
-    if (selectedTeachers.find(t => t.name === teacher.name)) {
-        alert("This teacher is already added.");
-        return;
-    }
-    selectedTeachers.push(teacher);
-    const deptInput = document.getElementById('department');
-    if (deptInput && !deptInput.value) deptInput.value = teacher.dept;
-    renderTeacherList();
-    if (typeof renderLivePreview === "function") renderLivePreview();
-}
+  /// 3. Add teacher to the list (max 3)
+  function addTeacher(teacher) {
+      if (selectedTeachers.length >= 3) {
+          alert("Maximum 3 teachers allowed.");
+          return;
+      }
+      if (selectedTeachers.find(t => t.name === teacher.name)) {
+          alert("This teacher is already added.");
+          return;
+      }
+      selectedTeachers.push(teacher);
+
+      const deptInput = document.getElementById('department');
+      if (deptInput && !deptInput.value) deptInput.value = teacher.dept;
+
+      const courseCodeInput = document.getElementById('courseCode');
+      if (courseCodeInput && teacher.short && !courseCodeInput.value.trim()) {
+          courseCodeInput.value = teacher.short + '-';
+      }
+
+      renderTeacherList();
+      if (typeof renderLivePreview === "function") renderLivePreview();
+  }
 
 // 4. Remove a teacher by index
 function removeTeacher(index) {
@@ -150,7 +157,6 @@ function getData() {
     course:      val('course')      || '',
     courseCode:  val('courseCode'),
     year:        val('year'),
-    term:        val('term'),
     session:     val('session'),
     submitDate:  formatDate(val('submitDate')),
     studentName: val('studentName') || 'Student Name',
@@ -282,8 +288,7 @@ function drawCover(ctx, W, H, scale, data, logo) {
   const infoLines = [];
   if (data.course)     infoLines.push(`Course Title:  ${data.course}`);
   if (data.courseCode) infoLines.push(`Course Code: ${data.courseCode}`);
-  if (data.year)       infoLines.push(`Year: ${data.year}`);
-  if (data.term)       infoLines.push(`Term: ${data.term}`);
+  if (data.year)       infoLines.push(`${data.year}`);
   if (data.session)    infoLines.push(`Session: ${data.session}`);
   infoLines.forEach((line, i) => {
     ctx.fillText(line, W / 2, cy + i * mm(7));
@@ -535,8 +540,7 @@ function buildJsPDFCover(doc, d, logoSrc) {
   const infoLines = [];
   if (d.course)     infoLines.push(`Course Title:  ${d.course}`);
   if (d.courseCode) infoLines.push(`Course Code: ${d.courseCode}`);
-  if (d.year)       infoLines.push(`Year: ${d.year}`);
-  if (d.term)       infoLines.push(`Term: ${d.term}`);
+  if (d.year)       infoLines.push(`${d.year}`);
   if (d.session)    infoLines.push(`Session: ${d.session}`);
   infoLines.forEach((line, i) => {
     doc.text(line, W / 2, cy + i * 7, { align: 'center' });
