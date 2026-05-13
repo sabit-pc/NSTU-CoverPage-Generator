@@ -18,9 +18,6 @@ Atkeeya Tasneem,Environmental Science and Disaster Management,Assistant Professo
 Niger Sultana,Environmental Science and Disaster Management,Assistant Professor,ESDM
 Sajib Ahmed,Environmental Science and Disaster Management,Assistant Professor,ESDM
 Fahmida Alam Bintu,Environmental Science and Disaster Management,Assistant Professor,ESDM
-
-//CSTE//
-
 Dr. Nahid Akter,Computer Science and Telecommunication Engineering,Professor & Chairman,CSTE
 Dr. Mohammad Humayun Kabir,Computer Science and Telecommunication Engineering,Professor (Grade-1),CSTE
 Dr. Ashadun Nobi,Computer Science and Telecommunication Engineering,Professor (Grade-2),CSTE
@@ -36,9 +33,6 @@ A. R. M. Mahamudul Hasan Rana,Computer Science and Telecommunication Engineering
 A. Q. M. Salauddin Pathan,Computer Science and Telecommunication Engineering,Assistant Professor,CSTE
 Ratnadip Kuri,Computer Science and Telecommunication Engineering,Assistant Professor,CSTE
 Sharmin Akter Milu,Computer Science and Telecommunication Engineering,Lecturer,CSTE
-
-//FIMS//
-
 Dr. Mehedi Mahmudul Hasan,Fisheries and Marine Science,Professor & Chairman,FIMS
 Dr. Md. Jahangir Sarker,Fisheries and Marine Science,Professor,FIMS
 Dr. Md. Belal Hossain,Fisheries and Marine Science,Professor,FIMS
