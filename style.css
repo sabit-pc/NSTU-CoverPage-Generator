@@ -292,6 +292,26 @@ label {
   letter-spacing: 0.02em;
 }
 
+select {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: var(--blue);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(26, 58, 110, 0.1);
+}
+
 .req { color: var(--accent); margin-left: 2px; }
 
 input[type="text"],

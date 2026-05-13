@@ -64,6 +64,8 @@ function addTeacher(teacher) {
         return;
     }
     selectedTeachers.push(teacher);
+    const deptInput = document.getElementById('department');
+    if (deptInput && !deptInput.value) deptInput.value = teacher.dept;
     renderTeacherList();
     if (typeof renderLivePreview === "function") renderLivePreview();
 }
@@ -143,8 +145,8 @@ function getData() {
   return {
     university:  val('university')  || 'Noakhali Science & Technology University',
     location:    val('location')    || 'Noakhali – 3814',
-    department:  val('department')  || 'Department of',
-    title:       val('title')       || 'Assignment Title',
+    department:  val('department'),
+    title:       val('title')       || 'Cover Page Title',
     course:      val('course')      || '',
     courseCode:  val('courseCode'),
     year:        val('year'),
@@ -153,6 +155,7 @@ function getData() {
     submitDate:  formatDate(val('submitDate')),
     studentName: val('studentName') || 'Student Name',
     roll:        val('roll')        || '',
+    assignmentType: val('assignmentType') || 'Cover Page Type',
     teachers:    getTeachers(),
   };
 }
@@ -189,6 +192,10 @@ document.querySelectorAll('input').forEach(el => {
   el.addEventListener('change', renderLivePreview);
 });
 
+document.querySelectorAll('select').forEach(el => {
+  el.addEventListener('change', renderLivePreview);
+});
+
 /* ─── Set default date ─────────────────────────────────────────── */
 (function () {
   $('submitDate').value = new Date().toISOString().split('T')[0];
@@ -211,18 +218,10 @@ function drawCover(ctx, W, H, scale, data, logo) {
   ctx.fillStyle = '#0b2545';
   ctx.fillRect(mm(8), mm(8), W - mm(16), mm(22));
 
-  /* Bottom navy band */
-  ctx.fillRect(mm(8), H - mm(28), W - mm(16), mm(20));
-
-  /* Red accent lines */
-  ctx.fillStyle = '#c8102e';
-  ctx.fillRect(mm(8), mm(30), W - mm(16), mm(2.5));
-  ctx.fillRect(mm(8), H - mm(28), W - mm(16), mm(2.5));
-
   /* University name in top band */
   ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
-  ctx.font = `bold ${mm(6.5)}px 'Times New Roman', serif`;
+  ctx.font = `bold ${mm(6.9)}px 'Times New Roman', serif`;
   ctx.fillText(data.university.toUpperCase(), W / 2, mm(22));
 
   /* Location */
@@ -232,7 +231,7 @@ function drawCover(ctx, W, H, scale, data, logo) {
 
   /* Logo */
   const logoW = mm(38);
-  const logoH = mm(44);
+  const logoH = mm(55);
   const logoX = (W - logoW) / 2;
   const logoY = mm(48);
   if (logo) {
@@ -255,18 +254,18 @@ function drawCover(ctx, W, H, scale, data, logo) {
   ctx.strokeStyle = '#0b2545';
   ctx.lineWidth = mm(0.5);
   ctx.beginPath();
-  ctx.moveTo(mm(40), afterLogo);
-  ctx.lineTo(W - mm(40), afterLogo);
+  ctx.moveTo(mm(100), afterLogo);
+  ctx.lineTo(W - mm(100), afterLogo);
   ctx.stroke();
 
   /* "Assignment On:" */
   const titleAreaY = afterLogo + mm(9);
   ctx.fillStyle = '#0b2545';
   ctx.font = `bold ${mm(4.8)}px 'Times New Roman', serif`;
-  ctx.fillText('Assignment On:', W / 2, titleAreaY);
+  ctx.fillText(`${data.assignmentType}:`, W / 2, titleAreaY);
 
   /* Assignment title (wrapped) */
-  ctx.font = `bold ${mm(6)}px 'Times New Roman', serif`;
+  ctx.font = `bold ${mm(6.3)}px 'Times New Roman', serif`;
   ctx.fillStyle = '#1a1a2e';
   const titleLines = wrapText(ctx, data.title, W - mm(50));
   titleLines.forEach((line, i) => {
@@ -369,7 +368,7 @@ function drawCover(ctx, W, H, scale, data, logo) {
 
   // Update cy so elements following the table start at the right place
 
-  cy += tH + mm(14);
+  cy += tH + mm(50);
 
   /* Submission date */
   if (data.submitDate) {
@@ -378,18 +377,6 @@ function drawCover(ctx, W, H, scale, data, logo) {
     ctx.textAlign = 'center';
     ctx.fillText(`Submission Date: ${data.submitDate}`, W / 2, cy);
   }
-
-  /* Bottom band text */
-  ctx.fillStyle = '#e8a020';
-  ctx.font = `${mm(3.6)}px 'Times New Roman', serif`;
-  ctx.textAlign = 'center';
-  ctx.fillText(data.university.toUpperCase(), W / 2, H - mm(20));
-
-  /* Page number */
-  ctx.fillStyle = '#999';
-  ctx.font = `${mm(3.5)}px 'Times New Roman', serif`;
-  ctx.textAlign = 'right';
-  ctx.fillText('1', W - mm(13), H - mm(5));
 }
 
 /* ─── Text wrap helper ──────────────────────────────────────────── */
@@ -482,26 +469,25 @@ function buildJsPDFCover(doc, d, logoSrc) {
   doc.setFillColor(11, 37, 69);
   doc.rect(8, 8, W - 16, 22, 'F');
 
-  /* Bottom navy band */
-  doc.rect(8, H - 28, W - 16, 20, 'F');
-
-  /* Red accent lines */
-  doc.setFillColor(200, 16, 46);
-  doc.rect(8, 30, W - 16, 2.5, 'F');
-  doc.rect(8, H - 28, W - 16, 2.5, 'F');
-
   /* University name */
   doc.setFont('times', 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(18);
   doc.setTextColor(255, 255, 255);
   doc.text(d.university.toUpperCase(), W / 2, 22, { align: 'center' });
 
-  /* Location */
-  doc.setFontSize(11);
+ /* Location */
+  doc.setFontSize(10);
   doc.setTextColor(11, 37, 69);
-  doc.text(d.location, W / 2, 42, { align: 'center' });
+  doc.text(d.location, W / 2, 40, { align: 'center' });
 
-  /* Logo */
+  /* Department under location */
+  doc.setFont('times', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text(d.department, W / 2, 47, { align: 'center' });
+
+  /* Logo — centered with breathing room */
+  let cy = 55;
   if (logoSrc) {
     try {
       let fmt = 'PNG';
@@ -509,35 +495,42 @@ function buildJsPDFCover(doc, d, logoSrc) {
       else if (logoSrc.startsWith('data:image/jpg'))  fmt = 'JPEG';
       else if (logoSrc.startsWith('data:image/webp')) fmt = 'WEBP';
       else if (logoSrc.startsWith('data:image/gif'))  fmt = 'GIF';
-      const lW = 38, lH = 44;
-      doc.addImage(logoSrc, fmt, (W - lW) / 2, 48, lW, lH);
+      const lW = 34, lH = 38;
+      doc.addImage(logoSrc, fmt, (W - lW) / 2, cy, lW, lH);
+      cy += lH + 7; // logo height + gap
     } catch (e) {
       console.warn('Logo skipped in PDF:', e.message);
+      cy += 10;
     }
   }
 
   /* Divider */
   doc.setDrawColor(11, 37, 69);
   doc.setLineWidth(0.5);
-  doc.line(40, 98, W - 40, 98);
+  doc.line(40, cy, W - 40, cy);
+  cy += 10;
 
-  /* "Assignment On:" */
+  /* Assignment Type label (dynamic) */
+  const assignTypeEl = document.getElementById('assignmentType');
+  const assignType = assignTypeEl ? assignTypeEl.value : 'Assignment On:';
   doc.setFont('times', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(11, 37, 69);
-  doc.text('Assignment On:', W / 2, 107, { align: 'center' });
+  doc.text(assignType, W / 2, cy, { align: 'center' });
+  cy += 10;
 
   /* Title */
+  doc.setFont('times', 'bold');
   doc.setFontSize(13);
   doc.setTextColor(26, 26, 46);
   const titleLines = doc.splitTextToSize(d.title, 160);
-  doc.text(titleLines, W / 2, 116, { align: 'center' });
+  doc.text(titleLines, W / 2, cy, { align: 'center' });
 
-  let cy = 116 + titleLines.length * 8;
+  cy = cy + titleLines.length * 8;
 
   /* Course info */
   doc.setFont('times', 'normal');
-  doc.setFontSize(10.5);
+  doc.setFontSize(13);
   doc.setTextColor(34, 34, 34);
   const infoLines = [];
   if (d.course)     infoLines.push(`Course Title:  ${d.course}`);
@@ -552,7 +545,7 @@ function buildJsPDFCover(doc, d, logoSrc) {
 
   /* Department */
   doc.setFont('times', 'bold');
-  doc.setFontSize(11);
+  doc.setFontSize(14);
   doc.setTextColor(11, 37, 69);
   doc.text(d.department, W / 2, cy, { align: 'center' });
   cy += 9;
@@ -602,7 +595,7 @@ doc.setTextColor(80, 80, 80);
 doc.text('Name:', col1X + 3, cy + 15);
 
 doc.setFont('times', 'bold');
-doc.setFontSize(11);
+doc.setFontSize(14);
 doc.setTextColor(11, 37, 69);
 doc.text(d.studentName || 'N/A', col1X + 3, cy + 23);
 
@@ -623,15 +616,15 @@ teachers.forEach((t, i) => {
   const baseY = cy + 23 + (i * teacherGroupSpacing);
 
   doc.setFont('times', 'bold');
-  doc.setFontSize(10);
+  doc.setFontSize(14);
   doc.setTextColor(11, 37, 69);
   doc.text(t.name || '', col2X + 3, baseY);
 
   doc.setFont('times', 'normal'); // Designation usually looks better in normal
-  doc.setFontSize(9.5);
+  doc.setFontSize(11);
   doc.text(t.desg || '', col2X + 3, baseY + 5);
   
-  doc.setFontSize(9);
+  doc.setFontSize(11);
   doc.text(t.dept || '', col2X + 3, baseY + 10);
 });
 
@@ -641,19 +634,10 @@ teachers.forEach((t, i) => {
   /* Submission date */
   if (d.submitDate) {
     doc.setFont('times', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(13);
     doc.setTextColor(11, 37, 69);
     doc.text(`Submission Date: ${d.submitDate}`, W / 2, cy, { align: 'center' });
   }
-
-  /* Bottom band text */
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(232, 160, 32);
-  /* Page number */
-  doc.setTextColor(160, 160, 160);
-  doc.setFontSize(9);
-  doc.text('1', W - 13, H - 5, { align: 'right' });
 }
 
 /* ─── Toast notification ───────────────────────────────────────── */
