@@ -9,12 +9,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<script type="module">
-  import { watchAuthState } from "./auth.js";
-  watchAuthState(user => {
-    if (!user) window.location.href = "auth.html";
-  }, true);
-</script>
 <body>
 
   <!-- ── HEADER ── -->
